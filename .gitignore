@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 *.so
 .Python
+node_modules/
+*.npm-debug.log
 build/
 develop-eggs/
 dist/
@@ -19,6 +21,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+dist/
+build/
 
 # Virtual Environment
 venv/
@@ -45,3 +49,6 @@ app.db
 # OS
 .DS_Store
 Thumbs.db 
+
+# VSCode
+.vscode/
