@@ -23,7 +23,7 @@
 
 1. کلون کردن مخزن:
 ```bash
-git clone https://github.com/yourusername/lens-workshop.git
+git clone git clone https://github.com/behbahani-trader/LensCraft.git
 cd lens-workshop
 ```
 
