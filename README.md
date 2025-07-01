@@ -26,8 +26,8 @@
 
 1. کلون کردن مخزن:
 ```bash
-git clone git clone https://github.com/behbahani-trader/LensCraft.git
-cd lens-workshop
+git clone https://github.com/behbahani-trader/LensCraft.git
+cd LensCraft
 ```
 
 2. اجرای با Docker Compose:
@@ -39,8 +39,8 @@ docker-compose up --build
 
 1. کلون کردن مخزن:
 ```bash
-git clone https://github.com/yourusername/lens-workshop.git
-cd lens-workshop
+git clone https://github.com/behbahani-trader/LensCraft.git
+cd LensCraft
 ```
 
 2. ایجاد محیط مجازی:

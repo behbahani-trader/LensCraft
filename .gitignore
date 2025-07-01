@@ -1,33 +1,16 @@
+# Node.js
+node_modules/
+npm-debug.log*
+.turbo/
+build/
+dist/
+
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-node_modules/
-*.npm-debug.log
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-dist/
-build/
-
-# Virtual Environment
 venv/
-env/
-ENV/
+.env
 
 # IDE
 .idea/
@@ -40,15 +23,9 @@ instance/
 .webassets-cache
 app.db
 
-# Environment variables
-.env
-
 # Logs
 *.log
 
 # OS
 .DS_Store
-Thumbs.db 
-
-# VSCode
-.vscode/
+Thumbs.db
