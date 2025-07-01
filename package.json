@@ -3,13 +3,16 @@
   "version": "1.0.0",
   "description": "LensCraft – سیستم مدیریت کارگاه تراش عدسی عینک",
     "scripts": {
-      "build": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css --minify"
+      "build": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css --minify",
+      "test": "jest"
     },
     "dependencies": {
       "tailwindcss": "^3.3.0",
       "daisyui": "^3.0.0",
       "postcss": "^8.4.0",
       "autoprefixer": "^10.4.0"
+    },
+    "devDependencies": {
+      "jest": "^29.0.0"
     }
   }
-  
