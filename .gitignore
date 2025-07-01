@@ -1,9 +1,12 @@
 # Node.js
 node_modules/
 npm-debug.log*
-.turbo/
-build/
 dist/
+build/
+.turbo/
+
+# Tailwind CSS / Front-end build
+app/static/css/output.css
 
 # Python
 __pycache__/
