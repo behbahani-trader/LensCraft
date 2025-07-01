@@ -1,5 +1,8 @@
 # سیستم مدیریت عینک‌سازی
 
+![CI](https://github.com/behbahani-trader/LensCraft/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://img.shields.io/codecov/c/github/behbahani-trader/LensCraft)
+
 این پروژه یک سیستم مدیریت برای عینک‌سازی است که به شما امکان می‌دهد سفارشات، مشتریان و فریم‌ها را به راحتی مدیریت کنید.
 
 ## ویژگی‌ها
@@ -91,4 +94,4 @@ flake8
 
 ## مجوز
 
-این پروژه تحت مجوز MIT منتشر شده است. برای اطلاعات بیشتر، فایل `LICENSE` را مطالعه کنید. 
+این پروژه تحت مجوز MIT منتشر شده است. برای اطلاعات بیشتر، فایل `LICENSE` را مطالعه کنید.
