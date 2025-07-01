@@ -1,7 +1,7 @@
 {
-    "name": "lens-workshop",
-    "version": "1.0.0",
-    "description": "Lens and Frame Workshop Management System",
+  "name": "lenscraft",
+  "version": "1.0.0",
+  "description": "LensCraft – سیستم مدیریت کارگاه تراش عدسی عینک",
     "scripts": {
       "build": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css --minify"
     },
