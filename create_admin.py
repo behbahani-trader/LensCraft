@@ -2,9 +2,11 @@ from app import create_app, db
 from app.models.user import User
 from werkzeug.security import generate_password_hash
 
-def create_admin(username, password):
+def create_admin():
     app = create_app()
     with app.app_context():
+        username = 'admin'
+        password = 'admin'
         if User.query.filter_by(username=username).first():
             print('User already exists!')
             return
@@ -14,8 +16,4 @@ def create_admin(username, password):
         print(f'Admin user {username} created successfully!')
 
 if __name__ == '__main__':
-    import sys
-    if len(sys.argv) != 3:
-        print('Usage: python create_admin.py <username> <password>')
-    else:
-        create_admin(sys.argv[1], sys.argv[2]) 
+    create_admin()
