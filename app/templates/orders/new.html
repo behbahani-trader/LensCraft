@@ -225,6 +225,30 @@
             </div>
         </div>
 
+        <!-- بخش هزینه اختیاری سفارش -->
+        <div class="card bg-base-100 shadow-xl mb-6">
+            <div class="card-header bg-error text-error-content p-4 rounded-t-2xl">
+                <h2 class="card-title">💸 هزینه اضافی (اختیاری)</h2>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        {{ expense_form.title(class_="input input-bordered w-full", placeholder="عنوان هزینه") }}
+                    </div>
+                    <div>
+                        {{ expense_form.amount(class_="input input-bordered w-full", placeholder="مبلغ (تومان)", min="1") }}
+                    </div>
+                    <div>
+                        {# حذف فیلد تاریخ هزینه از فرم #}
+                    </div>
+                </div>
+                <div class="mt-2">
+                    {{ expense_form.description(class_="textarea textarea-bordered w-full", placeholder="توضیحات (اختیاری)") }}
+                </div>
+            </div>
+        </div>
+        <!-- پایان بخش هزینه -->
+
         <!-- دکمه‌های عملیات -->
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
@@ -250,34 +274,7 @@
             </div>
         </div>
     </form>
-
-    <!-- بخش ثبت هزینه جدید برای این سفارش -->
-    <div class="card bg-base-100 shadow-xl mt-6">
-        <div class="card-body">
-            <h2 class="card-title mb-4">ثبت هزینه برای این سفارش</h2>
-            <form method="POST" action="#" id="expenseForm">
-                {{ expense_form.csrf_token }}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        {{ expense_form.title(class_="input input-bordered w-full", placeholder="عنوان هزینه", required=True) }}
-                    </div>
-                    <div>
-                        {{ expense_form.amount(class_="input input-bordered w-full", placeholder="مبلغ (تومان)", min="1", required=True) }}
-                    </div>
-                    <div>
-                        {{ expense_form.expense_date(class_="input input-bordered w-full") }}
-                    </div>
-                </div>
-                <div class="mt-2">
-                    {{ expense_form.description(class_="textarea textarea-bordered w-full", placeholder="توضیحات (اختیاری)") }}
-                </div>
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-error">افزودن هزینه به سفارش</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <!-- پایان بخش هزینه -->
+    <!-- پایان فرم سفارش -->
 </div>
 {% endblock %}
 

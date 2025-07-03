@@ -229,13 +229,21 @@ def new():
         for i in range(len(lens_type_ids)):
             if lens_type_ids[i] and lens_cut_type_ids[i] and quantities[i] and prices[i]:
                 total_amount += float(prices[i])
-        # اگر هزینه وارد شده بود، به مبلغ کل اضافه کن
-        expense_title = request.form.get('title')
-        expense_amount = request.form.get('amount')
-        expense_date = request.form.get('expense_date')
-        expense_description = request.form.get('description')
-        add_expense = expense_title and expense_amount and float(expense_amount) > 0
-        if add_expense:
+        # هزینه اختیاری
+        expense_title = request.form.get('title', '').strip()
+        expense_amount = request.form.get('amount', '').strip()
+        # حذف کامل تاریخ هزینه
+        expense_description = request.form.get('description', '').strip()
+        # اگر هیچ‌کدام از فیلدهای هزینه وارد نشده بود، هزینه را 0 قرار بده و هزینه ثبت نکن
+        if not expense_title and not expense_amount:
+            add_expense = False
+            expense_amount = 0
+        # اگر فقط یکی از فیلدها وارد شده بود یا مقدار نامعتبر بود، هزینه ثبت نکن و مقدار را 0 قرار بده
+        elif not expense_title or not expense_amount or not expense_amount.replace('.', '', 1).isdigit() or float(expense_amount) <= 0:
+            add_expense = False
+            expense_amount = 0
+        else:
+            add_expense = True
             total_amount += float(expense_amount)
         # ایجاد سفارش
         order = Order(
@@ -266,7 +274,6 @@ def new():
                 title=expense_title,
                 amount=float(expense_amount),
                 description=expense_description,
-                expense_date=datetime.strptime(expense_date, '%Y-%m-%d') if expense_date else datetime.now(),
                 customer_id=form.customer_id.data
             )
             db.session.add(expense)
@@ -338,6 +345,15 @@ def edit(id):
     form.customer_id.choices = [(c.id, c.full_name) for c in Customer.query.order_by(Customer.first_name).all()]
     
     if form.validate_on_submit():
+        # حذف تراکنش‌های قبلی صندوق مرتبط با این سفارش
+        transactions = CashBoxTransaction.query.filter_by(reference_type='order', reference_id=order.id).all()
+        for t in transactions:
+            if t.transaction_type == 'income':
+                t.cashbox.balance -= t.amount
+            elif t.transaction_type == 'expense':
+                t.cashbox.balance += t.amount
+            db.session.delete(t)
+        
         # محاسبه مبلغ کل
         total_amount = 0
         lens_type_ids = request.form.getlist('lens_type_id[]')
@@ -410,8 +426,11 @@ def edit(id):
             )
             db.session.add(transaction)
 
+        # پس از ذخیره سفارش جدید، توزیع درآمد جدید به صندوق‌ها
+        db.session.flush()
+        distribute_income_to_cashboxes(order)
         db.session.commit()
-        flash('سفارش با موفقیت به‌روزرسانی شد.', 'success')
+        flash('سفارش با موفقیت به‌روزرسانی شد و تغییرات در صندوق لحاظ شد.', 'success')
         return redirect(url_for('orders.show', id=order.id))
     
     # دریافت لیست نوع عدسی‌ها و نوع تراش‌ها
@@ -430,9 +449,18 @@ def edit(id):
 @login_required
 def delete(id):
     order = Order.query.get_or_404(id)
+    # حذف تراکنش‌های صندوق مرتبط با این سفارش
+    transactions = CashBoxTransaction.query.filter_by(reference_type='order', reference_id=order.id).all()
+    for t in transactions:
+        # بازگرداندن مبلغ تراکنش به صندوق مربوطه (برعکس نوع تراکنش)
+        if t.transaction_type == 'income':
+            t.cashbox.balance -= t.amount
+        elif t.transaction_type == 'expense':
+            t.cashbox.balance += t.amount
+        db.session.delete(t)
     db.session.delete(order)
     db.session.commit()
-    flash('سفارش با موفقیت حذف شد.', 'success')
+    flash('سفارش با موفقیت حذف شد و تغییرات در صندوق لحاظ شد.', 'success')
     return redirect(url_for('orders.index'))
 
 @bp.route('/orders/<int:id>/status', methods=['POST'])
@@ -595,13 +623,11 @@ def add_order_expense(order_id):
         title = form.title.data.strip()
         amount = form.amount.data
         description = form.description.data.strip()
-        expense_date = form.expense_date.data or datetime.now()
         # ثبت هزینه مرتبط با سفارش و مشتری
         expense = Expense(
             title=title,
             amount=amount,
             description=description,
-            expense_date=expense_date,
             customer_id=order.customer_id
         )
         db.session.add(expense)

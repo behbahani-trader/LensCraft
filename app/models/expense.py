@@ -10,7 +10,6 @@ class Expense(db.Model):
     title = db.Column(db.String(200), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text)
-    expense_date = db.Column(db.DateTime, default=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))  # مشتری مرتبط با هزینه

@@ -44,7 +44,6 @@ def new():
         description = form.description.data.strip()
         expense_date = form.expense_date.data or datetime.now()
         customer_id = form.customer_id.data
-        customer = Customer.query.get(customer_id)
         # ثبت هزینه
         expense = Expense(
             title=title,
@@ -54,32 +53,8 @@ def new():
             customer_id=customer_id
         )
         db.session.add(expense)
-        db.session.flush()
-        # انتخاب صندوق بر اساس نوع مشتری
-        if customer and customer.is_vip:
-            cashbox = CashBox.query.filter_by(name='B').first()
-            if not cashbox:
-                cashbox = CashBox(name='B', balance=0.0)
-                db.session.add(cashbox)
-                db.session.flush()
-        else:
-            cashbox = CashBox.query.filter_by(name='A').first()
-            if not cashbox:
-                cashbox = CashBox(name='A', balance=0.0)
-                db.session.add(cashbox)
-                db.session.flush()
-        cashbox.balance -= amount
-        transaction = CashBoxTransaction(
-            cashbox_id=cashbox.id,
-            amount=amount,
-            transaction_type='expense',
-            description=f'هزینه: {title}',
-            reference_type='expense',
-            reference_id=expense.id
-        )
-        db.session.add(transaction)
         db.session.commit()
-        flash('هزینه با موفقیت ثبت شد و از صندوق مناسب کسر گردید.', 'success')
+        flash('هزینه با موفقیت ثبت شد.', 'success')
         return redirect(url_for('expenses.index'))
     return render_template('expenses/new.html', form=form)
 
