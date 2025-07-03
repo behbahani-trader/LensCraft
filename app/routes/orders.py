@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from sqlalchemy import func
 from sqlalchemy.sql import or_
 from app.forms.order import OrderForm
+from app.forms.order_expense import OrderExpenseForm
+from app.models.expense import Expense
 
 bp = Blueprint('orders', __name__)
 
@@ -19,44 +21,27 @@ def distribute_income_to_cashboxes(order):
     customer = Customer.query.get(order.customer_id)
 
     # دریافت یا ایجاد صندوق‌ها
-    cashbox_main = CashBox.query.filter_by(name='اصلی').first()
-    if not cashbox_main:
-        cashbox_main = CashBox(name='اصلی', balance=0.0)
-        db.session.add(cashbox_main)
+    cashbox_a = CashBox.query.filter_by(name='A').first()
+    if not cashbox_a:
+        cashbox_a = CashBox(name='A', balance=0.0)
+        db.session.add(cashbox_a)
+        db.session.flush()
+
+    cashbox_b = CashBox.query.filter_by(name='B').first()
+    if not cashbox_b:
+        cashbox_b = CashBox(name='B', balance=0.0)
+        db.session.add(cashbox_b)
         db.session.flush()
 
     if customer.is_vip:
-        # مشتری VIP: توزیع بین صندوق‌های A و B
-        cashbox_a = CashBox.query.filter_by(name='A').first()
-        if not cashbox_a:
-            cashbox_a = CashBox(name='A', balance=0.0)
-            db.session.add(cashbox_a)
-            db.session.flush()
-
-        cashbox_b = CashBox.query.filter_by(name='B').first()
-        if not cashbox_b:
-            cashbox_b = CashBox(name='B', balance=0.0)
-            db.session.add(cashbox_b)
-            db.session.flush()
-
-        # محاسبه تعداد کل عدسی‌ها در سفارش
-        total_lenses = sum(lens.quantity for lens in order.lenses)
-
         # مشتری VIP: 80000 تومان به ازای هر عدسی به صندوق A، مابقی به صندوق B
+        total_lenses = sum(lens.quantity for lens in order.lenses)
         amount_to_a = total_lenses * 80000
         amount_to_b = order.total_amount - amount_to_a
-
-        # اطمینان از اینکه مبلغ صندوق B منفی نشود
         if amount_to_b < 0:
             amount_to_a = order.total_amount
             amount_to_b = 0
-
-        # بروزرسانی موجودی صندوق‌های A و B
         cashbox_a.balance += amount_to_a
-        if amount_to_b > 0:
-            cashbox_b.balance += amount_to_b
-
-        # ثبت تراکنش‌ها برای صندوق‌های A و B
         if amount_to_a > 0:
             transaction_a = CashBoxTransaction(
                 cashbox_id=cashbox_a.id,
@@ -67,8 +52,8 @@ def distribute_income_to_cashboxes(order):
                 reference_id=order.id
             )
             db.session.add(transaction_a)
-
         if amount_to_b > 0:
+            cashbox_b.balance += amount_to_b
             transaction_b = CashBoxTransaction(
                 cashbox_id=cashbox_b.id,
                 amount=amount_to_b,
@@ -79,19 +64,34 @@ def distribute_income_to_cashboxes(order):
             )
             db.session.add(transaction_b)
     else:
-        # مشتری عادی: تمام درآمد به صندوق اصلی
-        cashbox_main.balance += order.total_amount
-
-        # ثبت تراکنش برای صندوق اصلی
-        transaction_main = CashBoxTransaction(
-            cashbox_id=cashbox_main.id,
-            amount=order.total_amount,
-            transaction_type='income',
-            description=f'درآمد سفارش {order.order_number} - {customer.full_name}',
-            reference_type='order',
-            reference_id=order.id
-        )
-        db.session.add(transaction_main)
+        # مشتری عادی: 20000 تومان به صندوق B و باقی به صندوق A
+        amount_to_b = 20000
+        amount_to_a = order.total_amount - amount_to_b
+        if amount_to_a < 0:
+            amount_to_b = order.total_amount
+            amount_to_a = 0
+        cashbox_b.balance += amount_to_b
+        if amount_to_b > 0:
+            transaction_b = CashBoxTransaction(
+                cashbox_id=cashbox_b.id,
+                amount=amount_to_b,
+                transaction_type='income',
+                description=f'درآمد سفارش {order.order_number} - {customer.full_name} (معمولی - سهم B)',
+                reference_type='order',
+                reference_id=order.id
+            )
+            db.session.add(transaction_b)
+        if amount_to_a > 0:
+            cashbox_a.balance += amount_to_a
+            transaction_a = CashBoxTransaction(
+                cashbox_id=cashbox_a.id,
+                amount=amount_to_a,
+                transaction_type='income',
+                description=f'درآمد سفارش {order.order_number} - {customer.full_name} (معمولی - سهم A)',
+                reference_type='order',
+                reference_id=order.id
+            )
+            db.session.add(transaction_a)
 
 def generate_order_number():
     """تولید شماره سفارش منحصر به فرد"""
@@ -207,8 +207,8 @@ def index():
 def new():
     """ایجاد سفارش جدید"""
     form = OrderForm()
+    expense_form = OrderExpenseForm()
     form.customer_id.choices = [(c.id, c.full_name) for c in Customer.query.order_by(Customer.first_name).all()]
-    
     if form.validate_on_submit():
         # محاسبه مبلغ کل
         total_amount = 0
@@ -216,23 +216,27 @@ def new():
         lens_cut_type_ids = request.form.getlist('lens_cut_type_id[]')
         quantities = request.form.getlist('lens_quantity[]')
         prices = request.form.getlist('lens_price[]')
-
-        # بررسی وجود داده‌های عدسی
         if not lens_type_ids or not lens_cut_type_ids or not quantities or not prices:
             flash('لطفاً حداقل یک عدسی به سفارش اضافه کنید.', 'error')
             return render_template('orders/new.html',
                                 form=form,
+                                expense_form=expense_form,
                                 title='سفارش جدید',
                                 customers=Customer.query.order_by(Customer.first_name).all(),
                                 lens_types=LensType.query.order_by(LensType.name).all(),
                                 lens_cut_types=LensCutType.query.order_by(LensCutType.name).all(),
                                 today_date=date.today().strftime('%Y-%m-%d'))
-        
-        # محاسبه مبلغ کل
         for i in range(len(lens_type_ids)):
             if lens_type_ids[i] and lens_cut_type_ids[i] and quantities[i] and prices[i]:
                 total_amount += float(prices[i])
-        
+        # اگر هزینه وارد شده بود، به مبلغ کل اضافه کن
+        expense_title = request.form.get('title')
+        expense_amount = request.form.get('amount')
+        expense_date = request.form.get('expense_date')
+        expense_description = request.form.get('description')
+        add_expense = expense_title and expense_amount and float(expense_amount) > 0
+        if add_expense:
+            total_amount += float(expense_amount)
         # ایجاد سفارش
         order = Order(
             order_number=generate_order_number(),
@@ -245,7 +249,6 @@ def new():
         )
         db.session.add(order)
         db.session.flush()
-        
         # اضافه کردن عدسی‌ها
         for i in range(len(lens_type_ids)):
             if lens_type_ids[i] and lens_cut_type_ids[i] and quantities[i] and prices[i]:
@@ -257,10 +260,42 @@ def new():
                     price=float(prices[i])
                 )
                 db.session.add(order_lens)
-
+        # اگر هزینه وارد شده بود، هزینه را ثبت کن و مبلغ را به صندوق مناسب منتقل کن
+        if add_expense:
+            expense = Expense(
+                title=expense_title,
+                amount=float(expense_amount),
+                description=expense_description,
+                expense_date=datetime.strptime(expense_date, '%Y-%m-%d') if expense_date else datetime.now(),
+                customer_id=form.customer_id.data
+            )
+            db.session.add(expense)
+            db.session.flush()
+            customer = Customer.query.get(form.customer_id.data)
+            if customer and customer.is_vip:
+                cashbox = CashBox.query.filter_by(name='B').first()
+                if not cashbox:
+                    cashbox = CashBox(name='B', balance=0.0)
+                    db.session.add(cashbox)
+                    db.session.flush()
+            else:
+                cashbox = CashBox.query.filter_by(name='A').first()
+                if not cashbox:
+                    cashbox = CashBox(name='A', balance=0.0)
+                    db.session.add(cashbox)
+                    db.session.flush()
+            cashbox.balance -= float(expense_amount)
+            transaction = CashBoxTransaction(
+                cashbox_id=cashbox.id,
+                amount=float(expense_amount),
+                transaction_type='expense',
+                description=f'هزینه سفارش: {expense_title}',
+                reference_type='order_expense',
+                reference_id=expense.id
+            )
+            db.session.add(transaction)
         # توزیع درآمد به صندوق‌ها
         distribute_income_to_cashboxes(order)
-
         # اضافه کردن پیش‌پرداخت به صندوق اصلی
         if order.payment > 0:
             cashbox_main = CashBox.query.filter_by(name='اصلی').first()
@@ -268,11 +303,7 @@ def new():
                 cashbox_main = CashBox(name='اصلی', balance=0.0)
                 db.session.add(cashbox_main)
                 db.session.flush()
-
-            # اضافه کردن پیش‌پرداخت به صندوق اصلی
             cashbox_main.balance += order.payment
-
-            # ثبت تراکنش پیش‌پرداخت در صندوق اصلی
             transaction = CashBoxTransaction(
                 cashbox_id=cashbox_main.id,
                 amount=order.payment,
@@ -282,18 +313,16 @@ def new():
                 reference_id=order.id
             )
             db.session.add(transaction)
-
         db.session.commit()
         flash('سفارش با موفقیت ثبت شد.', 'success')
         return redirect(url_for('orders.index'))
-    
     # دریافت لیست نوع عدسی‌ها و نوع تراش‌ها
     lens_types = LensType.query.order_by(LensType.name).all()
     lens_cut_types = LensCutType.query.order_by(LensCutType.name).all()
-    
     from datetime import date
     return render_template('orders/new.html',
                          form=form,
+                         expense_form=expense_form,
                          title='سفارش جدید',
                          customers=Customer.query.order_by(Customer.first_name).all(),
                          lens_types=lens_types,
@@ -556,3 +585,55 @@ def settlement_history(id):
         'settlement_date': order.settlement_date.strftime('%Y/%m/%d %H:%M') if order.settlement_date else None,
         'settlement_notes': order.settlement_notes or ''
     })
+
+@bp.route('/orders/<int:order_id>/add-expense', methods=['POST'])
+@login_required
+def add_order_expense(order_id):
+    order = Order.query.get_or_404(order_id)
+    form = OrderExpenseForm()
+    if form.validate_on_submit():
+        title = form.title.data.strip()
+        amount = form.amount.data
+        description = form.description.data.strip()
+        expense_date = form.expense_date.data or datetime.now()
+        # ثبت هزینه مرتبط با سفارش و مشتری
+        expense = Expense(
+            title=title,
+            amount=amount,
+            description=description,
+            expense_date=expense_date,
+            customer_id=order.customer_id
+        )
+        db.session.add(expense)
+        db.session.flush()
+        # انتخاب صندوق بر اساس نوع مشتری
+        customer = order.customer
+        if customer and customer.is_vip:
+            cashbox = CashBox.query.filter_by(name='B').first()
+            if not cashbox:
+                cashbox = CashBox(name='B', balance=0.0)
+                db.session.add(cashbox)
+                db.session.flush()
+        else:
+            cashbox = CashBox.query.filter_by(name='A').first()
+            if not cashbox:
+                cashbox = CashBox(name='A', balance=0.0)
+                db.session.add(cashbox)
+                db.session.flush()
+        cashbox.balance -= amount
+        transaction = CashBoxTransaction(
+            cashbox_id=cashbox.id,
+            amount=amount,
+            transaction_type='expense',
+            description=f'هزینه سفارش: {title}',
+            reference_type='order_expense',
+            reference_id=expense.id
+        )
+        db.session.add(transaction)
+        # افزایش مبلغ کل سفارش
+        order.total_amount += amount
+        db.session.commit()
+        flash('هزینه به فاکتور اضافه شد و مبلغ کل به‌روزرسانی شد.', 'success')
+    else:
+        flash('خطا در ثبت هزینه. لطفاً اطلاعات را کامل وارد کنید.', 'error')
+    return redirect(url_for('orders.show', id=order_id))

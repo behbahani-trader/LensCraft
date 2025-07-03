@@ -7,6 +7,9 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">سفارش {{ order.order_number }}</h1>
         <div class="flex gap-2">
+            <a href="{{ url_for('orders.new') }}" class="btn btn-success">
+                <span class="ml-2">➕</span>ایجاد سفارش جدید
+            </a>
             <a href="{{ url_for('orders.edit', id=order.id) }}" class="btn btn-info">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -168,5 +171,61 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- بخش ثبت هزینه جدید برای این فاکتور -->
+    <div class="card bg-base-100 shadow-xl mt-6">
+        <div class="card-body">
+            <h2 class="card-title mb-4">ثبت هزینه جدید برای این فاکتور</h2>
+            <form method="POST" action="{{ url_for('orders.add_order_expense', order_id=order.id) }}">
+                {{ form.csrf_token }}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <input type="text" name="title" class="input input-bordered w-full" placeholder="عنوان هزینه" required>
+                    </div>
+                    <div>
+                        <input type="number" name="amount" class="input input-bordered w-full" placeholder="مبلغ (تومان)" min="1" required>
+                    </div>
+                    <div>
+                        <input type="date" name="expense_date" class="input input-bordered w-full">
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <textarea name="description" class="textarea textarea-bordered w-full" placeholder="توضیحات (اختیاری)"></textarea>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-error">افزودن هزینه به فاکتور</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- پایان بخش هزینه -->
+    <!-- نمایش لیست هزینه‌های این فاکتور -->
+    <div class="card bg-base-100 shadow-xl mt-6">
+        <div class="card-body">
+            <h2 class="card-title mb-4">هزینه‌های ثبت‌شده برای این فاکتور</h2>
+            <table class="table w-full">
+                <thead>
+                    <tr>
+                        <th>عنوان</th>
+                        <th>مبلغ</th>
+                        <th>تاریخ</th>
+                        <th>توضیحات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in order.customer.expense_set if expense %}
+                        {% if expense and expense.order_id == order.id %}
+                        <tr>
+                            <td>{{ expense.title }}</td>
+                            <td>{{ expense.amount }} تومان</td>
+                            <td>{{ expense.expense_date.strftime('%Y-%m-%d') if expense.expense_date else '' }}</td>
+                            <td>{{ expense.description or '' }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
-{% endblock %} 
+{% endblock %}
