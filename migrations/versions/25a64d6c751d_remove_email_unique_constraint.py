@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     # حذف محدودیت یکتا بودن ایمیل
     with op.batch_alter_table('customers') as batch_op:
-        batch_op.drop_index('ix_customers_email')
+        pass  # حذف ایندکس انجام نمی‌شود چون وجود ندارد
 
 
 def downgrade():
