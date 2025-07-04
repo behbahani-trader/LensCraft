@@ -72,104 +72,75 @@
     </div>
 
     <!-- لیست هزینه‌ها -->
-    <div class="card bg-base-100 shadow-xl">
-        <div class="card-header bg-error text-error-content p-4 rounded-t-2xl">
-            <h3 class="card-title">📋 لیست هزینه‌ها</h3>
+    {# بخش قدیمی لیست هزینه‌ها حذف شد چون دیگر متغیر expenses وجود ندارد #}
+    <!-- لیست هزینه‌های صندوق A (مشتری معمولی) -->
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-header bg-primary text-primary-content p-4 rounded-t-2xl flex justify-between items-center">
+            <h3 class="card-title">📋 هزینه‌های صندوق A (مشتری معمولی)</h3>
+            <span class="font-bold">مجموع: {{ "{:,}".format(total_a|int) }} تومان</span>
         </div>
         <div class="card-body p-0">
-            {% if expenses.items %}
+            {% if expenses_a %}
             <div class="overflow-x-auto">
                 <table class="table table-zebra">
                     <thead>
                         <tr>
                             <th>عنوان</th>
                             <th>مبلغ</th>
-                            <th>تاریخ هزینه</th>
                             <th>تاریخ ثبت</th>
                             <th>شرح</th>
-                            <th>عملیات</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for expense in expenses.items %}
+                        {% for expense in expenses_a %}
                         <tr>
                             <td class="font-medium">{{ expense.title }}</td>
                             <td class="font-mono text-error">{{ "{:,}".format(expense.amount|int) }} تومان</td>
-                            <td class="text-sm">{{ expense.expense_date.strftime('%Y/%m/%d') }}</td>
                             <td class="text-sm opacity-60">{{ expense.created_at.strftime('%Y/%m/%d %H:%M') }}</td>
-                            <td class="text-sm">
-                                {% if expense.description %}
-                                    {{ expense.description[:50] }}{% if expense.description|length > 50 %}...{% endif %}
-                                {% else %}
-                                    <span class="opacity-50">-</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="flex gap-1">
-                                    <a href="{{ url_for('expenses.show', id=expense.id) }}" class="btn btn-ghost btn-sm">
-                                        👁️
-                                    </a>
-                                    <a href="{{ url_for('expenses.edit', id=expense.id) }}" class="btn btn-ghost btn-sm">
-                                        ✏️
-                                    </a>
-                                    <form method="POST" action="{{ url_for('expenses.delete', id=expense.id) }}" class="inline" 
-                                          onsubmit="return confirm('آیا از حذف این هزینه اطمینان دارید؟')">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="btn btn-ghost btn-sm text-error">
-                                            🗑️
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
+                            <td class="text-sm">{{ expense.description or '-' }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
-            {% if expenses.pages > 1 %}
-            <div class="flex justify-center p-4">
-                <div class="join">
-                    {% if expenses.has_prev %}
-                        <a href="{{ url_for('expenses.index', page=expenses.prev_num, search=search) }}" class="join-item btn">«</a>
-                    {% endif %}
-                    
-                    {% for page_num in expenses.iter_pages() %}
-                        {% if page_num %}
-                            {% if page_num != expenses.page %}
-                                <a href="{{ url_for('expenses.index', page=page_num, search=search) }}" class="join-item btn">{{ page_num }}</a>
-                            {% else %}
-                                <span class="join-item btn btn-active">{{ page_num }}</span>
-                            {% endif %}
-                        {% else %}
-                            <span class="join-item btn btn-disabled">…</span>
-                        {% endif %}
-                    {% endfor %}
-                    
-                    {% if expenses.has_next %}
-                        <a href="{{ url_for('expenses.index', page=expenses.next_num, search=search) }}" class="join-item btn">»</a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
             {% else %}
-            <div class="p-8 text-center text-base-content/50">
-                <div class="text-4xl mb-4">💸</div>
-                <p>
-                    {% if search %}
-                        هزینه‌ای با این عنوان یافت نشد
-                    {% else %}
-                        هنوز هزینه‌ای ثبت نشده است
-                    {% endif %}
-                </p>
-                {% if not search %}
-                <a href="{{ url_for('expenses.new') }}" class="btn btn-primary mt-4">
-                    <span class="ml-2">➕</span>
-                    اولین هزینه را ثبت کنید
-                </a>
-                {% endif %}
+            <div class="p-4 text-center text-base-content/50">هزینه‌ای ثبت نشده است</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- لیست هزینه‌های صندوق B (مشتری VIP) -->
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-header bg-warning text-warning-content p-4 rounded-t-2xl flex justify-between items-center">
+            <h3 class="card-title">📋 هزینه‌های صندوق B (مشتری VIP)</h3>
+            <span class="font-bold">مجموع: {{ "{:,}".format(total_b|int) }} تومان</span>
+        </div>
+        <div class="card-body p-0">
+            {% if expenses_b %}
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead>
+                        <tr>
+                            <th>عنوان</th>
+                            <th>مبلغ</th>
+                            <th>تاریخ ثبت</th>
+                            <th>شرح</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses_b %}
+                        <tr>
+                            <td class="font-medium">{{ expense.title }}</td>
+                            <td class="font-mono text-error">{{ "{:,}".format(expense.amount|int) }} تومان</td>
+                            <td class="text-sm opacity-60">{{ expense.created_at.strftime('%Y/%m/%d %H:%M') }}</td>
+                            <td class="text-sm">{{ expense.description or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
+            {% else %}
+            <div class="p-4 text-center text-base-content/50">هزینه‌ای ثبت نشده است</div>
             {% endif %}
         </div>
     </div>

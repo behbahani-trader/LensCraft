@@ -13,8 +13,12 @@ from sqlalchemy.sql import or_
 from app.forms.order import OrderForm
 from app.forms.order_expense import OrderExpenseForm
 from app.models.expense import Expense
+from flask_wtf import FlaskForm
 
 bp = Blueprint('orders', __name__)
+
+class DummyForm(FlaskForm):
+    pass
 
 def distribute_income_to_cashboxes(order):
     """توزیع درآمد سفارش به صندوق‌ها"""
@@ -491,7 +495,8 @@ def update_status(id):
 @login_required
 def show(id):
     order = Order.query.get_or_404(id)
-    return render_template('orders/show.html', order=order)
+    form = DummyForm()
+    return render_template('orders/show.html', order=order, form=form)
 
 @bp.route('/orders/<int:id>/settle', methods=['POST'])
 @login_required

@@ -20,15 +20,26 @@ def index():
     if search:
         query = query.filter(Expense.title.ilike(f'%{search}%'))
     
-    expenses = query.order_by(Expense.expense_date.desc()).paginate(
+    expenses = query.order_by(Expense.created_at.desc()).paginate(
         page=page, per_page=20, error_out=False
     )
     
     # محاسبه مجموع هزینه‌ها
     total_expenses = db.session.query(db.func.sum(Expense.amount)).scalar() or 0
     
+    # تقسیم هزینه‌ها بر اساس نوع مشتری
+    expenses_a = query.join(Customer).filter(Customer.is_vip == False).order_by(Expense.created_at.desc()).all()
+    expenses_b = query.join(Customer).filter(Customer.is_vip == True).order_by(Expense.created_at.desc()).all()
+
+    # مجموع هزینه‌های هر صندوق
+    total_a = sum(e.amount for e in expenses_a)
+    total_b = sum(e.amount for e in expenses_b)
+
     return render_template('expenses/index.html', 
-                         expenses=expenses, 
+                         expenses_a=expenses_a, 
+                         expenses_b=expenses_b, 
+                         total_a=total_a,
+                         total_b=total_b,
                          search=search,
                          total_expenses=total_expenses)
 
@@ -42,14 +53,12 @@ def new():
         title = form.title.data.strip()
         amount = form.amount.data
         description = form.description.data.strip()
-        expense_date = form.expense_date.data or datetime.now()
         customer_id = form.customer_id.data
         # ثبت هزینه
         expense = Expense(
             title=title,
             amount=amount,
             description=description,
-            expense_date=expense_date,
             customer_id=customer_id
         )
         db.session.add(expense)

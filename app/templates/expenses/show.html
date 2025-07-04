@@ -67,19 +67,19 @@
 
                         <div>
                             <label class="label">
-                                <span class="label-text font-medium">تاریخ هزینه</span>
+                                <span class="label-text font-medium">تاریخ ثبت</span>
                             </label>
-                            <div class="p-3 bg-base-200 rounded-lg">
-                                {{ expense.expense_date.strftime('%Y/%m/%d') }}
+                            <div class="p-3 bg-base-200 rounded-lg text-sm opacity-70">
+                                {{ expense.created_at.strftime('%Y/%m/%d %H:%M') }}
                             </div>
                         </div>
 
                         <div>
                             <label class="label">
-                                <span class="label-text font-medium">تاریخ ثبت</span>
+                                <span class="label-text font-medium">مشتری</span>
                             </label>
-                            <div class="p-3 bg-base-200 rounded-lg text-sm opacity-70">
-                                {{ expense.created_at.strftime('%Y/%m/%d %H:%M') }}
+                            <div class="p-3 bg-base-200 rounded-lg">
+                                {{ expense.customer.full_name if expense.customer else '-' }}
                             </div>
                         </div>
 
