@@ -210,41 +210,28 @@ def new():
     expense_form = OrderExpenseForm()
     form.customer_id.choices = [(c.id, c.full_name) for c in Customer.query.order_by(Customer.first_name).all()]
     if form.validate_on_submit():
-        # محاسبه مبلغ کل
+        # --- هزینه‌های چندگانه ---
+        expense_titles = request.form.getlist('expense_title[]')
+        expense_amounts = request.form.getlist('expense_amount[]')
+        expense_descriptions = request.form.getlist('expense_description[]')
+        # محاسبه مجموع هزینه‌ها
+        total_expenses = 0
+        for i in range(len(expense_titles)):
+            title = expense_titles[i].strip()
+            amount = expense_amounts[i].strip()
+            description = expense_descriptions[i].strip() if i < len(expense_descriptions) else ''
+            if title and amount and amount.replace('.', '', 1).isdigit() and float(amount) > 0:
+                total_expenses += float(amount)
+        # جمع مبلغ کل سفارش (عدسی‌ها + همه هزینه‌ها)
         total_amount = 0
         lens_type_ids = request.form.getlist('lens_type_id[]')
         lens_cut_type_ids = request.form.getlist('lens_cut_type_id[]')
         quantities = request.form.getlist('lens_quantity[]')
         prices = request.form.getlist('lens_price[]')
-        if not lens_type_ids or not lens_cut_type_ids or not quantities or not prices:
-            flash('لطفاً حداقل یک عدسی به سفارش اضافه کنید.', 'error')
-            return render_template('orders/new.html',
-                                form=form,
-                                expense_form=expense_form,
-                                title='سفارش جدید',
-                                customers=Customer.query.order_by(Customer.first_name).all(),
-                                lens_types=LensType.query.order_by(LensType.name).all(),
-                                lens_cut_types=LensCutType.query.order_by(LensCutType.name).all(),
-                                today_date=date.today().strftime('%Y-%m-%d'))
         for i in range(len(lens_type_ids)):
             if lens_type_ids[i] and lens_cut_type_ids[i] and quantities[i] and prices[i]:
                 total_amount += float(prices[i])
-        # هزینه اختیاری
-        expense_title = request.form.get('title', '').strip()
-        expense_amount = request.form.get('amount', '').strip()
-        # حذف کامل تاریخ هزینه
-        expense_description = request.form.get('description', '').strip()
-        # اگر هیچ‌کدام از فیلدهای هزینه وارد نشده بود، هزینه را 0 قرار بده و هزینه ثبت نکن
-        if not expense_title and not expense_amount:
-            add_expense = False
-            expense_amount = 0
-        # اگر فقط یکی از فیلدها وارد شده بود یا مقدار نامعتبر بود، هزینه ثبت نکن و مقدار را 0 قرار بده
-        elif not expense_title or not expense_amount or not expense_amount.replace('.', '', 1).isdigit() or float(expense_amount) <= 0:
-            add_expense = False
-            expense_amount = 0
-        else:
-            add_expense = True
-            total_amount += float(expense_amount)  # هزینه به مبلغ سفارش اضافه می‌شود
+        total_amount += total_expenses
         # ایجاد سفارش
         order = Order(
             order_number=generate_order_number(),
@@ -253,7 +240,7 @@ def new():
             payment=form.payment.data or 0,
             notes=form.notes.data,
             total_amount=total_amount,
-            status='in_progress'  # وضعیت پیش‌فرض: در حال انجام
+            status='in_progress'
         )
         db.session.add(order)
         db.session.flush()
@@ -268,16 +255,20 @@ def new():
                     price=float(prices[i])
                 )
                 db.session.add(order_lens)
-        # اگر هزینه وارد شده بود، فقط هزینه را ثبت کن و هیچ مبلغی از صندوق کم نکن و تراکنش نساز
-        if add_expense:
-            expense = Expense(
-                title=expense_title,
-                amount=float(expense_amount),
-                description=expense_description,
-                customer_id=form.customer_id.data
-            )
-            db.session.add(expense)
-            db.session.flush()
+        # ثبت همه هزینه‌های معتبر
+        for i in range(len(expense_titles)):
+            title = expense_titles[i].strip()
+            amount = expense_amounts[i].strip()
+            description = expense_descriptions[i].strip() if i < len(expense_descriptions) else ''
+            if title and amount and amount.replace('.', '', 1).isdigit() and float(amount) > 0:
+                expense = Expense(
+                    title=title,
+                    amount=float(amount),
+                    description=description,
+                    customer_id=form.customer_id.data
+                )
+                db.session.add(expense)
+                db.session.flush()
         # توزیع درآمد به صندوق‌ها فقط بر اساس جمع عدسی‌ها (بدون هزینه)
         order_amount_with_expense = order.total_amount
         order.total_amount = sum(float(prices[i]) for i in range(len(lens_type_ids)) if lens_type_ids[i] and lens_cut_type_ids[i] and quantities[i] and prices[i])

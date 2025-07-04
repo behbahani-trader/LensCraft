@@ -225,29 +225,44 @@
             </div>
         </div>
 
-        <!-- بخش هزینه اختیاری سفارش -->
+        <!-- بخش هزینه‌های اضافی (چندگانه) -->
         <div class="card bg-base-100 shadow-xl mb-6">
             <div class="card-header bg-error text-error-content p-4 rounded-t-2xl">
                 <h2 class="card-title">💸 هزینه اضافی (اختیاری)</h2>
             </div>
             <div class="card-body">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        {{ expense_form.title(class_="input input-bordered w-full", placeholder="عنوان هزینه") }}
-                    </div>
-                    <div>
-                        {{ expense_form.amount(class_="input input-bordered w-full", placeholder="مبلغ (تومان)", min="1") }}
-                    </div>
-                    <div>
-                        {# حذف فیلد تاریخ هزینه از فرم #}
+                <div id="expenses-list">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 expense-row">
+                        <div>
+                            <input name="expense_title[]" class="input input-bordered w-full" placeholder="عنوان هزینه" />
+                        </div>
+                        <div>
+                            <input name="expense_amount[]" class="input input-bordered w-full" placeholder="مبلغ (تومان)" min="1" type="number" />
+                        </div>
+                        <div>
+                            <input name="expense_description[]" class="input input-bordered w-full" placeholder="توضیحات (اختیاری)" />
+                        </div>
                     </div>
                 </div>
-                <div class="mt-2">
-                    {{ expense_form.description(class_="textarea textarea-bordered w-full", placeholder="توضیحات (اختیاری)") }}
+                <div class="mt-4">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addExpenseRow()">➕ افزودن ردیف هزینه جدید</button>
                 </div>
             </div>
         </div>
-        <!-- پایان بخش هزینه -->
+        <script>
+        function addExpenseRow() {
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-1 md:grid-cols-3 gap-4 expense-row mt-2';
+            row.innerHTML = `
+                <div><input name="expense_title[]" class="input input-bordered w-full" placeholder="عنوان هزینه" /></div>
+                <div><input name="expense_amount[]" class="input input-bordered w-full" placeholder="مبلغ (تومان)" min="1" type="number" /></div>
+                <div class="flex gap-2"><input name="expense_description[]" class="input input-bordered w-full" placeholder="توضیحات (اختیاری)" />
+                <button type="button" class="btn btn-error btn-xs" onclick="this.closest('.expense-row').remove()">حذف</button></div>
+            `;
+            document.getElementById('expenses-list').appendChild(row);
+        }
+        </script>
+        <!-- پایان بخش هزینه‌های اضافی -->
 
         <!-- دکمه‌های عملیات -->
         <div class="card bg-base-100 shadow-xl">
