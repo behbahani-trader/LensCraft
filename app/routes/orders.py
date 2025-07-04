@@ -244,7 +244,7 @@ def new():
             expense_amount = 0
         else:
             add_expense = True
-            total_amount += float(expense_amount)
+            total_amount += float(expense_amount)  # هزینه به مبلغ سفارش اضافه می‌شود
         # ایجاد سفارش
         order = Order(
             order_number=generate_order_number(),
@@ -268,7 +268,7 @@ def new():
                     price=float(prices[i])
                 )
                 db.session.add(order_lens)
-        # اگر هزینه وارد شده بود، هزینه را ثبت کن و مبلغ را به صندوق مناسب منتقل کن
+        # اگر هزینه وارد شده بود، فقط هزینه را ثبت کن و هیچ مبلغی از صندوق کم نکن و تراکنش نساز
         if add_expense:
             expense = Expense(
                 title=expense_title,
@@ -278,31 +278,11 @@ def new():
             )
             db.session.add(expense)
             db.session.flush()
-            customer = Customer.query.get(form.customer_id.data)
-            if customer and customer.is_vip:
-                cashbox = CashBox.query.filter_by(name='B').first()
-                if not cashbox:
-                    cashbox = CashBox(name='B', balance=0.0)
-                    db.session.add(cashbox)
-                    db.session.flush()
-            else:
-                cashbox = CashBox.query.filter_by(name='A').first()
-                if not cashbox:
-                    cashbox = CashBox(name='A', balance=0.0)
-                    db.session.add(cashbox)
-                    db.session.flush()
-            cashbox.balance -= float(expense_amount)
-            transaction = CashBoxTransaction(
-                cashbox_id=cashbox.id,
-                amount=float(expense_amount),
-                transaction_type='expense',
-                description=f'هزینه سفارش: {expense_title}',
-                reference_type='order_expense',
-                reference_id=expense.id
-            )
-            db.session.add(transaction)
-        # توزیع درآمد به صندوق‌ها
+        # توزیع درآمد به صندوق‌ها فقط بر اساس جمع عدسی‌ها (بدون هزینه)
+        order_amount_with_expense = order.total_amount
+        order.total_amount = sum(float(prices[i]) for i in range(len(lens_type_ids)) if lens_type_ids[i] and lens_cut_type_ids[i] and quantities[i] and prices[i])
         distribute_income_to_cashboxes(order)
+        order.total_amount = order_amount_with_expense
         # اضافه کردن پیش‌پرداخت به صندوق اصلی
         if order.payment > 0:
             cashbox_main = CashBox.query.filter_by(name='اصلی').first()
@@ -656,8 +636,7 @@ def add_order_expense(order_id):
             reference_id=expense.id
         )
         db.session.add(transaction)
-        # افزایش مبلغ کل سفارش
-        order.total_amount += amount
+        # دیگر مبلغ کل سفارش افزایش نمی‌یابد چون هزینه نباید در total_amount لحاظ شود
         db.session.commit()
         flash('هزینه به فاکتور اضافه شد و مبلغ کل به‌روزرسانی شد.', 'success')
     else:
