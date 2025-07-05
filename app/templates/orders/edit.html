@@ -2,211 +2,532 @@
 
 {% block title %}ویرایش سفارش{% endblock %}
 
-{% block content %}
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold">ویرایش سفارش</h1>
-    <a href="{{ url_for('orders.show', id=order.id) }}" class="btn btn-ghost">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        بازگشت
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{{ url_for('orders.index') }}" class="flex items-center gap-2">
+        <span>📋</span>
+        <span>سفارشات</span>
     </a>
-</div>
+</li>
+<li class="breadcrumb-item">
+    <a href="{{ url_for('orders.show', id=order.id) }}" class="flex items-center gap-2">
+        <span>#{{ order.id }}</span>
+    </a>
+</li>
+<li class="breadcrumb-item">
+    <span class="flex items-center gap-2 text-primary">
+        <span>✏️</span>
+        <span>ویرایش سفارش</span>
+    </span>
+</li>
+{% endblock %}
 
-<div class="card bg-base-100 shadow-xl">
-    <div class="card-body">
-        <form method="POST" id="orderForm">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- مشتری -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">مشتری</span>
-                    </label>
-                    <select name="customer_id" class="select select-bordered" required>
-                        <option value="">انتخاب مشتری</option>
-                        {% for customer in customers %}
-                        <option value="{{ customer.id }}" {% if customer.id == order.customer_id %}selected{% endif %}>
-                            {{ customer.full_name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+            <h1 class="text-4xl font-bold mb-2">✏️ ویرایش سفارش #{{ order.id }}</h1>
+            <p class="text-base-content/70">به‌روزرسانی اطلاعات سفارش مشتری</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{{ url_for('orders.show', id=order.id) }}" class="btn btn-outline">
+                <span class="ml-2">🔙</span>
+                بازگشت
+            </a>
+        </div>
+    </div>
 
-                <!-- تاریخ تحویل -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">تاریخ تحویل</span>
-                    </label>
-                    <input type="date" name="delivery_date" value="{{ order.delivery_date.strftime('%Y-%m-%d') }}" class="input input-bordered" required />
-                </div>
+    <form method="POST" id="orderForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                <!-- وضعیت -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">وضعیت</span>
-                    </label>
-                    <select name="status" class="select select-bordered" required>
-                        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>در انتظار</option>
-                        <option value="in_progress" {% if order.status == 'in_progress' %}selected{% endif %}>در حال انجام</option>
-                        <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>تکمیل شده</option>
-                        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>لغو شده</option>
-                    </select>
+        <!-- اطلاعات اصلی سفارش -->
+        <div class="card bg-base-100 shadow-xl mb-6">
+            <div class="card-header bg-primary text-primary-content p-4 rounded-t-2xl">
+                <h2 class="card-title">📝 اطلاعات سفارش</h2>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- مشتری -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">👤 مشتری</span>
+                            <span class="label-text-alt text-error">*</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <select name="customer_id" id="customer-select" class="select select-bordered flex-1" required>
+                                <option value="">انتخاب مشتری</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}" data-phone="{{ customer.phone or '' }}"
+                                        {% if customer.id == order.customer_id %}selected{% endif %}>
+                                    {{ customer.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <a href="{{ url_for('customers.new') }}" class="btn btn-outline btn-square" title="مشتری جدید">
+                                <span>👤➕</span>
+                            </a>
+                        </div>
+                        <div class="label">
+                            <span class="label-text-alt" id="customer-info"></span>
+                        </div>
+                    </div>
+
+                    <!-- تاریخ ثبت -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">📅 تاریخ ثبت</span>
+                            <span class="label-text-alt text-error">*</span>
+                        </label>
+                        <input type="date" name="created_at" class="input input-bordered" required 
+                               value="{{ order.created_at.strftime('%Y-%m-%d') }}" />
+                    </div>
+
+                    <!-- شماره سفارش -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">🔢 شماره سفارش</span>
+                        </label>
+                        <input type="text" class="input input-bordered bg-base-200 font-mono text-lg" value="{{ order.id }}" readonly />
+                    </div>
+
+                    <!-- تاریخ تحویل -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">🚚 تاریخ تحویل</span>
+                        </label>
+                        <input type="date" name="delivery_date" class="input input-bordered"
+                               value="{{ order.delivery_date.strftime('%Y-%m-%d') if order.delivery_date else '' }}" />
+                    </div>
+
+                    <!-- وضعیت -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">📊 وضعیت</span>
+                            <span class="label-text-alt text-error">*</span>
+                        </label>
+                        <select name="status" class="select select-bordered" required>
+                            <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>⏳ در انتظار</option>
+                            <option value="in_progress" {% if order.status == 'in_progress' %}selected{% endif %}>🛠️ در حال انجام</option>
+                            <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>✅ تکمیل شده</option>
+                            <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>❌ لغو شده</option>
+                        </select>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- عدسی‌ها -->
-            <div class="mt-8">
-                <h2 class="text-xl font-bold mb-4">عدسی‌ها</h2>
-                <div id="lenses-container">
-                    {% for lens in order.lenses %}
-                    <div class="lens-item card bg-base-200 p-4 mb-4">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <!-- نوع عدسی -->
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text">نوع عدسی</span>
-                                </label>
-                                <select name="lens_type_id[]" class="select select-bordered lens-type" required>
-                                    <option value="">انتخاب نوع عدسی</option>
-                                    {% for lens_type in lens_types %}
-                                    <option value="{{ lens_type.id }}" 
-                                            data-price="{{ lens_type.default_price }}"
-                                            {% if lens_type.id == lens.lens_type_id %}selected{% endif %}>
-                                        {{ lens_type.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+        <!-- بخش عدسی‌ها -->
+        <div class="card bg-base-100 shadow-xl mb-6">
+            <div class="card-header bg-secondary text-secondary-content p-4 rounded-t-2xl">
+                <div class="flex justify-between items-center">
+                    <h2 class="card-title">👓 عدسی‌های سفارش</h2>
+                    <button type="button" onclick="addLensRow()" class="btn btn-primary btn-sm">
+                        <span class="ml-1">➕</span>
+                        افزودن ردیف
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra w-full">
+                        <thead>
+                            <tr>
+                                <th>نوع عدسی</th>
+                                <th>نوع تراش</th>
+                                <th>تعداد</th>
+                                <th>قیمت فی</th>
+                                <th>قیمت کل</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lenses-container">
+                            {% for lens in order.lenses %}
+                            <tr class="lens-row">
+                                <td>
+                                    <select name="lens_type_id[]" class="select select-bordered w-full lens-type" required>
+                                        <option value="">انتخاب نوع عدسی</option>
+                                        {% for lens_type in lens_types %}
+                                        <option value="{{ lens_type.id }}" data-price="{{ lens_type.default_price }}"
+                                                {% if lens_type.id == lens.lens_type_id %}selected{% endif %}>
+                                            {{ lens_type.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="lens_cut_type_id[]" class="select select-bordered w-full lens-cut-type" required>
+                                        <option value="">انتخاب نوع تراش</option>
+                                        {% for cut_type in lens_cut_types %}
+                                        <option value="{{ cut_type.id }}" data-price="{{ cut_type.default_price }}"
+                                                {% if cut_type.id == lens.lens_cut_type_id %}selected{% endif %}>
+                                            {{ cut_type.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="lens_quantity[]" value="{{ lens.quantity }}" min="1" class="input input-bordered w-full lens-quantity" required>
+                                </td>
+                                <td>
+                                    <input type="number" name="lens_unit_price[]" value="{{ lens.unit_price }}" class="input input-bordered w-full lens-unit-price" placeholder="قیمت فی (قابل تغییر)" title="می‌توانید این قیمت را تغییر دهید">
+                                </td>
+                                <td>
+                                    <input type="number" name="lens_price[]" value="{{ lens.price }}" class="input input-bordered w-full lens-price bg-base-200" readonly>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-error btn-sm" onclick="removeRow(this)">
+                                        <span>🗑️</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <!-- ردیف پیش‌فرض اگر عدسی وجود نداشته باشد -->
+                            <tr class="lens-row">
+                                <td>
+                                    <select name="lens_type_id[]" class="select select-bordered w-full lens-type" required>
+                                        <option value="">انتخاب نوع عدسی</option>
+                                        {% for lens_type in lens_types %}
+                                        <option value="{{ lens_type.id }}" data-price="{{ lens_type.default_price }}">{{ lens_type.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="lens_cut_type_id[]" class="select select-bordered w-full lens-cut-type" required>
+                                        <option value="">انتخاب نوع تراش</option>
+                                        {% for cut_type in lens_cut_types %}
+                                        <option value="{{ cut_type.id }}" data-price="{{ cut_type.default_price }}">{{ cut_type.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="lens_quantity[]" value="1" min="1" class="input input-bordered w-full lens-quantity" required>
+                                </td>
+                                <td>
+                                    <input type="number" name="lens_unit_price[]" class="input input-bordered w-full lens-unit-price" placeholder="قیمت فی (قابل تغییر)" title="می‌توانید این قیمت را تغییر دهید">
+                                </td>
+                                <td>
+                                    <input type="number" name="lens_price[]" class="input input-bordered w-full lens-price bg-base-200" readonly>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-error btn-sm" onclick="removeRow(this)">
+                                        <span>🗑️</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
 
-                            <!-- نوع تراش -->
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text">نوع تراش</span>
-                                </label>
-                                <select name="lens_cut_type_id[]" class="select select-bordered lens-cut-type" required>
-                                    <option value="">انتخاب نوع تراش</option>
-                                    {% for cut_type in lens_cut_types %}
-                                    <option value="{{ cut_type.id }}"
-                                            data-price="{{ cut_type.default_price }}"
-                                            {% if cut_type.id == lens.lens_cut_type_id %}selected{% endif %}>
-                                        {{ cut_type.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                <!-- خلاصه -->
+                <div class="flex justify-between items-center mt-4 p-4 bg-base-200 rounded-lg">
+                    <div class="text-lg font-bold">
+                        جمع کل: <span id="total-amount-display">0</span> تومان
+                    </div>
+                    <div class="text-sm">
+                        تعداد کل عدسی: <span id="total-quantity-display">0</span> عدد
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                            <!-- تعداد -->
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text">تعداد</span>
-                                </label>
-                                <input type="number" name="lens_quantity[]" value="{{ lens.quantity }}" class="input input-bordered" required />
-                            </div>
+        <!-- اطلاعات مالی -->
+        <div class="card bg-base-100 shadow-xl mb-6">
+            <div class="card-header bg-success text-success-content p-4 rounded-t-2xl">
+                <h2 class="card-title">💰 اطلاعات مالی</h2>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- مبلغ کل -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">💵 مبلغ کل سفارش</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="total_amount" id="total_amount" 
+                                   class="input input-bordered input-lg bg-base-200 font-bold text-xl" readonly />
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50">
+                                تومان
+                            </span>
+                        </div>
+                    </div>
 
-                            <!-- قیمت -->
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text">قیمت (تومان)</span>
-                                </label>
-                                <input type="number" name="lens_price[]" value="{{ lens.price }}" class="input input-bordered lens-price" required readonly />
-                            </div>
+                    <!-- پیش پرداخت -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">💳 پیش پرداخت</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="payment" id="payment" class="input input-bordered" 
+                                   value="{{ order.payment or 0 }}" min="0" placeholder="مبلغ پیش پرداخت" />
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50">
+                                تومان
+                            </span>
+                        </div>
+                        <div class="label">
+                            <span class="label-text-alt">باقی مانده: <span id="remaining-amount">0</span> تومان</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- توضیحات -->
+        <div class="card bg-base-100 shadow-xl mb-6">
+            <div class="card-header bg-info text-info-content p-4 rounded-t-2xl">
+                <h2 class="card-title">📝 توضیحات</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">📋 توضیحات سفارش</span>
+                    </label>
+                    <textarea name="notes" class="textarea textarea-bordered h-32" 
+                              placeholder="توضیحات اضافی، نکات ویژه، یا درخواست‌های خاص مشتری...">{{ order.notes or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- بخش هزینه‌های اضافی (چندگانه) -->
+        <div class="card bg-base-100 shadow-xl mb-6">
+            <div class="card-header bg-error text-error-content p-4 rounded-t-2xl">
+                <h2 class="card-title">💸 هزینه اضافی (اختیاری)</h2>
+            </div>
+            <div class="card-body">
+                <div id="expenses-list">
+                    {% for expense in order.expenses %}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 expense-row mt-2">
+                        <div><input name="expense_title[]" class="input input-bordered w-full" placeholder="عنوان هزینه" value="{{ expense.title }}"></div>
+                        <div><input name="expense_amount[]" class="input input-bordered w-full" placeholder="مبلغ (تومان)" min="1" type="number" value="{{ expense.amount }}"></div>
+                        <div class="flex gap-2">
+                            <input name="expense_description[]" class="input input-bordered w-full" placeholder="توضیحات (اختیاری)" value="{{ expense.description }}">
+                            <button type="button" class="btn btn-error btn-xs" onclick="this.closest('.expense-row').remove()">حذف</button>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
-
-                <button type="button" id="add-lens" class="btn btn-secondary mt-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    افزودن عدسی
-                </button>
+                <div class="mt-4">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addExpenseRow()">➕ افزودن ردیف هزینه جدید</button>
+                </div>
             </div>
-
-            <!-- مبلغ کل -->
-            <div class="form-control mt-6">
-                <label class="label">
-                    <span class="label-text">مبلغ کل (تومان)</span>
-                </label>
-                <input type="number" name="total_amount" id="total_amount" value="{{ order.total_amount }}" class="input input-bordered" required readonly />
+        </div>
+        
+        <!-- دکمه‌های عملیات -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <div class="text-sm text-base-content/70">
+                        <span>⚠️ لطفاً قبل از ثبت، تمام اطلاعات را بررسی کنید</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <a href="{{ url_for('orders.show', id=order.id) }}" class="btn btn-outline">
+                            <span class="ml-2">❌</span>
+                            انصراف
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span class="ml-2">💾</span>
+                            بروزرسانی سفارش
+                        </button>
+                    </div>
+                </div>
             </div>
-
-            <!-- پیش پرداخت -->
-            <div class="form-control mt-6">
-                <label class="label">
-                    <span class="label-text">پیش پرداخت (تومان)</span>
-                </label>
-                <input type="number" name="payment" value="{{ order.payment }}" class="input input-bordered" required />
-            </div>
-
-            <!-- توضیحات -->
-            <div class="form-control mt-6">
-                <label class="label">
-                    <span class="label-text">توضیحات</span>
-                </label>
-                <textarea name="notes" class="textarea textarea-bordered h-24">{{ order.notes }}</textarea>
-            </div>
-
-            <div class="card-actions justify-end mt-6">
-                <button type="submit" class="btn btn-primary">بروزرسانی سفارش</button>
-            </div>
-        </form>
-    </div>
+        </div>
+    </form>
+    <!-- پایان فرم سفارش -->
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const lensesContainer = document.getElementById('lenses-container');
-    const addLensButton = document.getElementById('add-lens');
-    const totalAmountInput = document.getElementById('total_amount');
+function addExpenseRow() {
+    const row = document.createElement('div');
+    row.className = 'grid grid-cols-1 md:grid-cols-3 gap-4 expense-row mt-2';
+    row.innerHTML = `
+        <div><input name="expense_title[]" class="input input-bordered w-full" placeholder="عنوان هزینه" /></div>
+        <div><input name="expense_amount[]" class="input input-bordered w-full" placeholder="مبلغ (تومان)" min="1" type="number" /></div>
+        <div class="flex gap-2"><input name="expense_description[]" class="input input-bordered w-full" placeholder="توضیحات (اختیاری)" />
+        <button type="button" class="btn btn-error btn-xs" onclick="this.closest('.expense-row').remove()">حذف</button></div>
+    `;
+    document.getElementById('expenses-list').appendChild(row);
+}
 
-    // تابع محاسبه قیمت کل
-    function calculateTotal() {
-        let total = 0;
-        document.querySelectorAll('.lens-price').forEach(input => {
-            total += parseFloat(input.value || 0);
-        });
-        totalAmountInput.value = total;
+// تابع اضافه کردن ردیف جدید
+function addLensRow() {
+    const container = document.getElementById('lenses-container');
+    const newRow = document.createElement('tr');
+    newRow.className = 'lens-row';
+
+    newRow.innerHTML = `
+        <td>
+            <select name="lens_type_id[]" class="select select-bordered w-full lens-type" required>
+                <option value="">انتخاب نوع عدسی</option>
+                {% for lens_type in lens_types %}
+                <option value="{{ lens_type.id }}" data-price="{{ lens_type.default_price }}">{{ lens_type.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <select name="lens_cut_type_id[]" class="select select-bordered w-full lens-cut-type" required>
+                <option value="">انتخاب نوع تراش</option>
+                {% for cut_type in lens_cut_types %}
+                <option value="{{ cut_type.id }}" data-price="{{ cut_type.default_price }}">{{ cut_type.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <input type="number" name="lens_quantity[]" value="1" min="1" class="input input-bordered w-full lens-quantity" required>
+        </td>
+        <td>
+            <input type="number" name="lens_unit_price[]" class="input input-bordered w-full lens-unit-price" placeholder="قیمت فی (قابل تغییر)" title="می‌توانید این قیمت را تغییر دهید">
+        </td>
+        <td>
+            <input type="number" name="lens_price[]" class="input input-bordered w-full lens-price bg-base-200" readonly>
+        </td>
+        <td>
+            <button type="button" class="btn btn-error btn-sm" onclick="removeRow(this)">
+                <span>🗑️</span>
+            </button>
+        </td>
+    `;
+
+    container.appendChild(newRow);
+    setupRowEvents(newRow);
+    updateTotals();
+}
+
+// تابع حذف ردیف
+function removeRow(button) {
+    const row = button.closest('tr');
+    const rowCount = document.querySelectorAll('.lens-row').length;
+
+    if (rowCount > 1) {
+        row.remove();
+        updateTotals();
+    } else {
+        alert('حداقل یک عدسی باید در سفارش باشد');
+    }
+}
+
+// تابع محاسبه قیمت ردیف
+function calculateRowPrice(row) {
+    const lensType = row.querySelector('.lens-type');
+    const cutType = row.querySelector('.lens-cut-type');
+    const quantity = row.querySelector('.lens-quantity');
+    const unitPrice = row.querySelector('.lens-unit-price');
+    const totalPrice = row.querySelector('.lens-price');
+
+    // محاسبه قیمت فی خودکار (فقط اگر خالی باشد)
+    if (lensType.value && cutType.value && !unitPrice.value) {
+        const lensPrice = parseFloat(lensType.options[lensType.selectedIndex].dataset.price || 0);
+        const cutPrice = parseFloat(cutType.options[cutType.selectedIndex].dataset.price || 0);
+        unitPrice.value = lensPrice + cutPrice;
+
+        // highlight کردن فیلد برای نشان دادن که قابل تغییر است
+        unitPrice.style.backgroundColor = '#e0f2fe';
+        setTimeout(() => {
+            unitPrice.style.backgroundColor = '';
+        }, 2000);
     }
 
-    // تابع محاسبه قیمت هر عدسی
-    function calculateLensPrice(lensItem) {
-        const lensType = lensItem.querySelector('.lens-type');
-        const lensCutType = lensItem.querySelector('.lens-cut-type');
-        const priceInput = lensItem.querySelector('.lens-price');
+    // محاسبه قیمت کل
+    const qty = parseInt(quantity.value || 1);
+    const unit = parseFloat(unitPrice.value || 0);
+    totalPrice.value = qty * unit;
 
-        if (lensType.value && lensCutType.value) {
-            const lensTypePrice = parseFloat(lensType.options[lensType.selectedIndex].dataset.price || 0);
-            const cutTypePrice = parseFloat(lensCutType.options[lensCutType.selectedIndex].dataset.price || 0);
-            priceInput.value = lensTypePrice + cutTypePrice;
-        } else {
-            priceInput.value = '';
+    updateTotals();
+}
+
+// تابع بروزرسانی مجموع
+function updateTotals() {
+    let totalAmount = 0;
+    let totalQuantity = 0;
+
+    document.querySelectorAll('.lens-row').forEach(row => {
+        const price = parseFloat(row.querySelector('.lens-price').value || 0);
+        const quantity = parseInt(row.querySelector('.lens-quantity').value || 0);
+
+        totalAmount += price;
+        totalQuantity += quantity;
+    });
+
+    document.getElementById('total_amount').value = totalAmount;
+    document.getElementById('total-amount-display').textContent = totalAmount.toLocaleString();
+    document.getElementById('total-quantity-display').textContent = totalQuantity;
+
+    calculateRemaining();
+}
+
+// تابع محاسبه باقی مانده
+function calculateRemaining() {
+    const total = parseFloat(document.getElementById('total_amount').value || 0);
+    const payment = parseFloat(document.getElementById('payment').value || 0);
+    const remaining = total - payment;
+
+    const remainingSpan = document.getElementById('remaining-amount');
+    remainingSpan.textContent = remaining.toLocaleString();
+
+    if (remaining <= 0) {
+        remainingSpan.className = 'text-success font-bold';
+    } else if (payment > 0) {
+        remainingSpan.className = 'text-warning font-bold';
+    } else {
+        remainingSpan.className = 'text-error font-bold';
+    }
+}
+
+// تابع تنظیم event های ردیف
+function setupRowEvents(row) {
+    const lensType = row.querySelector('.lens-type');
+    const cutType = row.querySelector('.lens-cut-type');
+    const quantity = row.querySelector('.lens-quantity');
+    const unitPrice = row.querySelector('.lens-unit-price');
+
+    [lensType, cutType, quantity, unitPrice].forEach(element => {
+        if (element) {
+            element.addEventListener('change', () => calculateRowPrice(row));
+            element.addEventListener('input', () => calculateRowPrice(row));
         }
-        calculateTotal();
+    });
+}
+
+// تابع بروزرسانی اطلاعات مشتری
+function updateCustomerInfo() {
+    const customerSelect = document.getElementById('customer-select');
+    const customerInfo = document.getElementById('customer-info');
+
+    if (customerSelect && customerInfo) {
+        const selectedOption = customerSelect.options[customerSelect.selectedIndex];
+        if (selectedOption.value) {
+            const phone = selectedOption.dataset.phone;
+            customerInfo.textContent = phone ? `تلفن: ${phone}` : 'بدون شماره تلفن';
+        } else {
+            customerInfo.textContent = '';
+        }
+    }
+}
+
+// راه‌اندازی اولیه
+document.addEventListener('DOMContentLoaded', function() {
+    // تنظیم event های ردیف پیش‌فرض
+    document.querySelectorAll('.lens-row').forEach(row => {
+        setupRowEvents(row);
+    });
+
+    // event listener برای مشتری
+    const customerSelect = document.getElementById('customer-select');
+    if (customerSelect) {
+        customerSelect.addEventListener('change', updateCustomerInfo);
     }
 
-    // افزودن عدسی جدید
-    addLensButton.addEventListener('click', function() {
-        const lensItem = document.querySelector('.lens-item').cloneNode(true);
-        lensItem.querySelectorAll('select').forEach(select => select.value = '');
-        lensItem.querySelector('.lens-price').value = '';
-        lensesContainer.appendChild(lensItem);
+    // event listener برای پیش پرداخت
+    const paymentInput = document.getElementById('payment');
+    if (paymentInput) {
+        paymentInput.addEventListener('input', calculateRemaining);
+    }
 
-        // اضافه کردن event listener برای محاسبه قیمت
-        lensItem.querySelectorAll('select').forEach(select => {
-            select.addEventListener('change', () => calculateLensPrice(lensItem));
-        });
-    });
-
-    // اضافه کردن event listener برای محاسبه قیمت در همه عدسی‌ها
-    document.querySelectorAll('.lens-item').forEach(lensItem => {
-        lensItem.querySelectorAll('select').forEach(select => {
-            select.addEventListener('change', () => calculateLensPrice(lensItem));
-        });
-    });
+    updateCustomerInfo();
+    updateTotals();
 });
 </script>
-{% endblock %} 
+{% endblock %}

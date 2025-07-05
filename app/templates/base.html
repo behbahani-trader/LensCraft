@@ -10,91 +10,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <!-- Fallback Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <style>
-    .navbar-gradient {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    .logo-text {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-weight: 800;
-    }
-    .nav-item {
-        transition: all 0.3s ease;
-        position: relative;
-    }
-    .nav-item:hover {
-        transform: translateY(-2px);
-    }
-    .nav-item::after {
-        content: '';
-        position: absolute;
-        width: 0;
-        height: 2px;
-        bottom: -5px;
-        left: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        transition: all 0.3s ease;
-        transform: translateX(-50%);
-    }
-    .nav-item:hover::after {
-        width: 100%;
-    }
-    .breadcrumb-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .user-avatar {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    .notification-badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        background: #ef4444;
-        color: white;
-        border-radius: 50%;
-        width: 18px;
-        height: 18px;
-        font-size: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-    }
-    /* Fallback for Font Awesome icons */
-    .fas, .fab {
-        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", sans-serif !important;
-        font-weight: 900;
-    }
-    .fab {
-        font-weight: 400;
-    }
-    /* Icon fallbacks */
-    .fa-home::before { content: "🏠"; }
-    .fa-chart-line::before { content: "📊"; }
-    .fa-book::before { content: "📚"; }
-    .fa-clipboard-list::before { content: "📋"; }
-    .fa-users::before { content: "👥"; }
-    .fa-chart-bar::before { content: "📈"; }
-    .fa-cog::before { content: "⚙️"; }
-    .fa-bell::before { content: "🔔"; }
-    .fa-sun::before { content: "☀️"; }
-    .fa-moon::before { content: "🌙"; }
-    .fa-user::before { content: "👤"; }
-    .fa-glasses::before { content: "👓"; }
-    .fa-bars::before { content: "☰"; }
-    </style>
 
     {% block extra_css %}{% endblock %}
 </head>

@@ -18,19 +18,19 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto max-w-full px-2 sm:px-4 py-6 sm:py-8">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
         <div>
-            <h1 class="text-4xl font-bold mb-2">💸 {{ expense.title }}</h1>
-            <p class="text-base-content/70">جزئیات هزینه</p>
+            <h1 class="text-2xl sm:text-4xl font-bold mb-2">💸 {{ expense.title }}</h1>
+            <p class="text-sm sm:text-base text-base-content/70">جزئیات هزینه</p>
         </div>
-        <div class="flex gap-2">
-            <a href="{{ url_for('expenses.index') }}" class="btn btn-outline">
+        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <a href="{{ url_for('expenses.index') }}" class="btn btn-outline btn-sm sm:btn-md w-full sm:w-auto">
                 <span class="ml-2">🔙</span>
                 بازگشت
             </a>
-            <a href="{{ url_for('expenses.edit', id=expense.id) }}" class="btn btn-warning">
+            <a href="{{ url_for('expenses.edit', id=expense.id) }}" class="btn btn-warning btn-sm sm:btn-md w-full sm:w-auto">
                 <span class="ml-2">✏️</span>
                 ویرایش
             </a>
@@ -38,20 +38,20 @@
     </div>
 
     <!-- اطلاعات هزینه -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <!-- اطلاعات اصلی -->
         <div class="lg:col-span-2">
             <div class="card bg-base-100 shadow-xl">
-                <div class="card-header bg-error text-error-content p-4 rounded-t-2xl">
-                    <h2 class="card-title">📋 اطلاعات هزینه</h2>
+                <div class="card-header bg-error text-error-content p-3 sm:p-4 rounded-t-2xl">
+                    <h2 class="card-title text-lg sm:text-xl">📋 اطلاعات هزینه</h2>
                 </div>
                 <div class="card-body">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div>
                             <label class="label">
                                 <span class="label-text font-medium">عنوان هزینه</span>
                             </label>
-                            <div class="p-3 bg-base-200 rounded-lg">
+                            <div class="p-2 sm:p-3 bg-base-200 rounded-lg">
                                 {{ expense.title }}
                             </div>
                         </div>
@@ -60,7 +60,7 @@
                             <label class="label">
                                 <span class="label-text font-medium">مبلغ</span>
                             </label>
-                            <div class="p-3 bg-base-200 rounded-lg font-mono text-error text-lg">
+                            <div class="p-2 sm:p-3 bg-base-200 rounded-lg font-mono text-error text-base sm:text-lg">
                                 {{ "{:,}".format(expense.amount|int) }} تومان
                             </div>
                         </div>
@@ -69,7 +69,7 @@
                             <label class="label">
                                 <span class="label-text font-medium">تاریخ ثبت</span>
                             </label>
-                            <div class="p-3 bg-base-200 rounded-lg text-sm opacity-70">
+                            <div class="p-2 sm:p-3 bg-base-200 rounded-lg text-xs sm:text-sm opacity-70">
                                 {{ expense.created_at.strftime('%Y/%m/%d %H:%M') }}
                             </div>
                         </div>
@@ -78,7 +78,7 @@
                             <label class="label">
                                 <span class="label-text font-medium">مشتری</span>
                             </label>
-                            <div class="p-3 bg-base-200 rounded-lg">
+                            <div class="p-2 sm:p-3 bg-base-200 rounded-lg">
                                 {{ expense.customer.full_name if expense.customer else '-' }}
                             </div>
                         </div>
@@ -88,7 +88,7 @@
                             <label class="label">
                                 <span class="label-text font-medium">شرح تکمیلی</span>
                             </label>
-                            <div class="p-3 bg-base-200 rounded-lg">
+                            <div class="p-2 sm:p-3 bg-base-200 rounded-lg">
                                 {{ expense.description }}
                             </div>
                         </div>
@@ -99,18 +99,18 @@
         </div>
 
         <!-- آمار و عملیات -->
-        <div class="space-y-6">
+        <div class="space-y-4 sm:space-y-6 mt-4 lg:mt-0">
             <!-- آمار -->
             <div class="card bg-gradient-to-br from-error to-error-focus text-error-content shadow-xl">
                 <div class="card-body text-center">
-                    <h3 class="card-title justify-center mb-4">📊 خلاصه</h3>
-                    <div class="space-y-4">
+                    <h3 class="card-title justify-center mb-2 sm:mb-4 text-base sm:text-lg">📊 خلاصه</h3>
+                    <div class="space-y-2 sm:space-y-4">
                         <div>
-                            <div class="text-3xl font-bold">{{ "{:,}".format(expense.amount|int) }}</div>
-                            <div class="text-sm opacity-80">مبلغ هزینه (تومان)</div>
+                            <div class="text-2xl sm:text-3xl font-bold">{{ "{:,}".format(expense.amount|int) }}</div>
+                            <div class="text-xs sm:text-sm opacity-80">مبلغ هزینه (تومان)</div>
                         </div>
                         <div class="divider divider-error-content opacity-30"></div>
-                        <div class="text-sm opacity-80">
+                        <div class="text-xs sm:text-sm opacity-80">
                             این مبلغ از صندوق اصلی کسر شده است
                         </div>
                     </div>
@@ -119,11 +119,11 @@
 
             <!-- عملیات -->
             <div class="card bg-base-100 shadow-xl">
-                <div class="card-header bg-warning text-warning-content p-4 rounded-t-2xl">
-                    <h3 class="card-title">⚙️ عملیات</h3>
+                <div class="card-header bg-warning text-warning-content p-3 sm:p-4 rounded-t-2xl">
+                    <h3 class="card-title text-base sm:text-lg">⚙️ عملیات</h3>
                 </div>
-                <div class="card-body space-y-3">
-                    <a href="{{ url_for('expenses.edit', id=expense.id) }}" class="btn btn-warning btn-block">
+                <div class="card-body space-y-2 sm:space-y-3">
+                    <a href="{{ url_for('expenses.edit', id=expense.id) }}" class="btn btn-warning btn-block btn-sm sm:btn-md">
                         <span class="ml-2">✏️</span>
                         ویرایش هزینه
                     </a>
@@ -131,7 +131,7 @@
                     <form method="POST" action="{{ url_for('expenses.delete', id=expense.id) }}" 
                           onsubmit="return confirm('آیا از حذف این هزینه اطمینان دارید؟\n\nتوجه: مبلغ هزینه به صندوق A برگردانده خواهد شد.')">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-error btn-block">
+                        <button type="submit" class="btn btn-error btn-block btn-sm sm:btn-md">
                             <span class="ml-2">🗑️</span>
                             حذف هزینه
                         </button>
@@ -139,7 +139,7 @@
                     
                     <div class="divider"></div>
                     
-                    <a href="{{ url_for('cashbox.detail', cashbox_name='اصلی') }}" class="btn btn-info btn-block">
+                    <a href="{{ url_for('cashbox.detail', cashbox_name='اصلی') }}" class="btn btn-info btn-block btn-sm sm:btn-md">
                         <span class="ml-2">🏛️</span>
                         مشاهده صندوق اصلی
                     </a>
@@ -148,11 +148,11 @@
 
             <!-- هشدار -->
             <div class="alert alert-warning">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
                 <div>
-                    <h3 class="font-bold">توجه!</h3>
+                    <h3 class="font-bold text-xs sm:text-base">توجه!</h3>
                     <div class="text-xs">
                         در صورت حذف این هزینه، مبلغ آن به صندوق اصلی برگردانده خواهد شد.
                     </div>

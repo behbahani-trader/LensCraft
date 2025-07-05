@@ -13,7 +13,9 @@ class Expense(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))  # مشتری مرتبط با هزینه
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))      # سفارش مرتبط با هزینه
     customer = db.relationship('Customer')
+    order = db.relationship('Order', back_populates='expenses')
     
     def __repr__(self):
         return f'<Expense {self.title}: {self.amount}>'

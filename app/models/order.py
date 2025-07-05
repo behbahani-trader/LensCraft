@@ -26,6 +26,7 @@ class Order(db.Model):
     # Relationships
     customer = db.relationship('Customer', back_populates='orders')
     lenses = db.relationship('OrderLens', back_populates='order', cascade='all, delete-orphan')
+    expenses = db.relationship('Expense', back_populates='order', cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Order {self.order_number}>'
@@ -81,6 +82,16 @@ class Order(db.Model):
     @property
     def jalali_delivery_date(self):
         return format_jalali(self.delivery_date)
+
+    @property
+    def expenses_total(self):
+        """جمع کل هزینه‌های اضافی"""
+        return sum(expense.amount for expense in self.expenses)
+
+    @property
+    def lenses_total(self):
+        """جمع کل عدسی‌ها"""
+        return sum(lens.price for lens in self.lenses)
 
     @property
     def total_paid_amount(self):

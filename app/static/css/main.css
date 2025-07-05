@@ -1,0 +1,377 @@
+/* app/static/css/main.css */
+
+/* -----------------------------------------------------------------------------
+   1. FONT DECLARATIONS
+      - All @font-face rules.
+   ----------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/static/fonts/Vazirmatn-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/static/fonts/Vazirmatn-ExtraLight.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/static/fonts/Vazirmatn-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/static/fonts/Vazirmatn-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/static/fonts/Vazirmatn-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/static/fonts/Vazirmatn-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/static/fonts/Vazirmatn-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/static/fonts/Vazirmatn-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/static/fonts/Vazirmatn-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* -----------------------------------------------------------------------------
+   2. BASE & TYPOGRAPHY
+      - Global styles (body, html).
+      - Default typography (h1-h6, p, a, etc.).
+      - Font overrides that were previously using !important.
+   ----------------------------------------------------------------------------- */
+body, html, * {
+  font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700; /* Bold */
+}
+
+strong, b {
+  font-weight: 700; /* Bold */
+}
+
+.navbar, .btn-primary {
+  font-weight: 600; /* SemiBold */
+}
+
+.card-title, .stat-title {
+  font-weight: 500; /* Medium */
+}
+
+.stat-value {
+  font-weight: 700; /* Bold */
+}
+
+.table th {
+  font-weight: 600; /* SemiBold */
+}
+
+.badge {
+  font-weight: 500; /* Medium */
+}
+
+/* Fallback for Font Awesome icons */
+.fas, .fab {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", sans-serif;
+    font-weight: 900;
+}
+.fab {
+    font-weight: 400;
+}
+/* Icon fallbacks */
+.fa-home::before { content: "🏠"; }
+.fa-chart-line::before { content: "📊"; }
+.fa-book::before { content: "📚"; }
+.fa-clipboard-list::before { content: "📋"; }
+.fa-users::before { content: "👥"; }
+.fa-chart-bar::before { content: "📈"; }
+.fa-cog::before { content: "⚙️"; }
+.fa-bell::before { content: "🔔"; }
+.fa-sun::before { content: "☀️"; }
+.fa-moon::before { content: "🌙"; }
+.fa-user::before { content: "👤"; }
+.fa-glasses::before { content: "👓"; }
+.fa-bars::before { content: "☰"; }
+
+/* -----------------------------------------------------------------------------
+   3. LAYOUT & CORE COMPONENTS
+      - Styles for major layout elements like the navbar, footer, and main container.
+      - Styles migrated from the <style> block in base.html.
+   ----------------------------------------------------------------------------- */
+.navbar-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.logo-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+}
+
+.nav-item {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav-item:hover {
+    transform: translateY(-2px);
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-item:hover::after {
+    width: 100%;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* -----------------------------------------------------------------------------
+   4. REUSABLE COMPONENTS
+      - Styles for cards, buttons, badges, forms, tables, etc.
+   ----------------------------------------------------------------------------- */
+.dashboard-card {
+  background: linear-gradient(135deg, var(--fallback-b1,oklch(var(--b1))), var(--fallback-b2,oklch(var(--b2))));
+  border: 1px solid var(--fallback-b3,oklch(var(--b3)));
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.stat-card {
+  background: linear-gradient(135deg, var(--fallback-b1,oklch(var(--b1))), var(--fallback-b2,oklch(var(--b2))));
+  border: 1px solid var(--fallback-b3,oklch(var(--b3)));
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #f59e0b, #10b981);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.table-zebra tbody tr:nth-child(even) {
+  background-color: var(--fallback-b2,oklch(var(--b2)));
+}
+
+.table-zebra tbody tr:hover {
+  background-color: var(--fallback-b3,oklch(var(--b3)));
+  transition: background-color 0.2s ease;
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: var(--fallback-b3,oklch(var(--b3)));
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+
+.badge-lg {
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.tooltip-custom {
+  background: var(--fallback-b1,oklch(var(--b1)));
+  border: 1px solid var(--fallback-b3,oklch(var(--b3)));
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* -----------------------------------------------------------------------------
+   5. PAGE-SPECIFIC STYLES
+      - Styles that apply only to specific pages or sections (e.g., dashboard, reports).
+   ----------------------------------------------------------------------------- */
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+.chart-container canvas {
+  border-radius: 8px;
+}
+
+/* -----------------------------------------------------------------------------
+   6. UTILITIES & ANIMATIONS
+      - Helper classes, animations (keyframes), and other utilities.
+   ----------------------------------------------------------------------------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.stat {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.counter {
+  transition: all 0.3s ease;
+}
+
+.counter:hover {
+  transform: scale(1.05);
+}
+
+.chart-gradient-primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.chart-gradient-secondary {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.chart-gradient-accent {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.chart-gradient-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+/* -----------------------------------------------------------------------------
+   7. RESPONSIVE STYLES
+   ----------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .chart-container {
+    height: 250px;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+}

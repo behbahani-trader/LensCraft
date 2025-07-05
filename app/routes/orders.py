@@ -269,7 +269,8 @@ def new():
                     title=title,
                     amount=float(amount),
                     description=description,
-                    customer_id=form.customer_id.data
+                    customer_id=form.customer_id.data,
+                    order_id=order.id
                 )
                 db.session.add(expense)
                 db.session.flush()
@@ -604,9 +605,14 @@ def add_order_expense(order_id):
             title=title,
             amount=amount,
             description=description,
-            customer_id=order.customer_id
+            customer_id=order.customer_id,
+            order_id=order.id
         )
         db.session.add(expense)
+
+        # به‌روزرسانی مبلغ کل سفارش
+        order.total_amount += amount
+
         db.session.flush()
         # انتخاب صندوق بر اساس نوع مشتری
         customer = order.customer
@@ -632,7 +638,6 @@ def add_order_expense(order_id):
             reference_id=expense.id
         )
         db.session.add(transaction)
-        # دیگر مبلغ کل سفارش افزایش نمی‌یابد چون هزینه نباید در total_amount لحاظ شود
         db.session.commit()
         flash('هزینه به فاکتور اضافه شد و مبلغ کل به‌روزرسانی شد.', 'success')
     else:

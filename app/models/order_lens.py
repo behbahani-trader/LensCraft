@@ -19,5 +19,12 @@ class OrderLens(db.Model):
     lens_type = db.relationship('LensType', back_populates='order_lenses')
     lens_cut_type = db.relationship('LensCutType', back_populates='order_lenses')
 
+    @property
+    def unit_price(self):
+        """محاسبه قیمت واحد"""
+        if self.quantity > 0:
+            return self.price / self.quantity
+        return 0
+
     def __repr__(self):
-        return f'<OrderLens {self.id}>' 
+        return f'<OrderLens {self.id}>'
